@@ -3,6 +3,11 @@ from httpx import Client, URL
 from dataclasses import dataclass
 from enum import Enum, auto
 from functools import wraps
+from exceptions import (
+    BearerRequired,
+    ResponseException
+)
+from models import AccessToken
 
 
 class MarzbanState(Enum):
@@ -10,7 +15,9 @@ class MarzbanState(Enum):
     OPENED = auto()
     CLOSED = auto()
 
-# TODO: creating request & response objects
+# TODO: Create method for all Admin operations
+# TODO: Create object for the requests and responses
+# TODO: Study more about decoraters and fix them
 
 @dataclass
 class Marzban(AbstractContextManager):
@@ -21,6 +28,8 @@ class Marzban(AbstractContextManager):
         self.base_url = base_url
 
         self._state = MarzbanState.UNOPENED
+        
+        self.__bearer = None
 
     def close(self):
         if self._state != MarzbanState.CLOSED:
@@ -52,31 +61,56 @@ class Marzban(AbstractContextManager):
         self._state = MarzbanState.CLOSED
             
         
-
     @staticmethod
-    def __flush_state(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            args = list(args)
-            self = args[0]
-            args = tuple(args)
-            if self._state == MarzbanState.UNOPENED:
-                self.__client = Client()
-                self._state = MarzbanState.OPENED
-                return func(*args, **kwargs)
+    def __flush_state(force_bearer: bool=False):
+        def decorator(func: callable):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                args = list(args)
+                self = args[0]
+                args = tuple(args)
+                if force_bearer:
+                    if self.__bearer is None:
+                        raise BearerRequired("Bearer Token should be created before using methods")
+
+                if self._state == MarzbanState.UNOPENED:
+                    self.__client = Client()
+                    self._state = MarzbanState.OPENED
+                    return func(*args, **kwargs)
+                
+                elif self._state == MarzbanState.OPENED:
+                    return func(*args, **kwargs)
+
+                raise RuntimeError("Can't do any action while connection is closed")
             
-            elif self._state == MarzbanState.OPENED:
-                return func(*args, **kwargs)
+            return wrapper
+        return decorator
 
-            raise RuntimeError("Can't do any action while connection is closed")
-        
-        return wrapper
-
-    @__flush_state
+    @__flush_state()
     def get_admin_token(self, username: str, password: str):
         request = self.__client.post(
             self.base_url.join("/api/admin/token"),
             data={"username": username, "password": password},
         )
 
-        return request.json()
+        if request.status_code == 200:
+            response = request.json()
+            result = AccessToken(
+                response.get("access_token"), 
+                response.get("token_type")
+            )
+            self.__bearer = result.access_token
+            return result
+        
+        elif request.status_code == 401:
+            raise ResponseException("Invalid Login Credential")
+        
+    
+    @__flush_state(force_bearer=True)
+    def get_current_admin(self):
+        request = self.__client.get(
+            self.base_url.join("/api/admin"),
+            headers={'Authorization': f'Bearer {self.__bearer}'}
+        )
+        
+        print(request.json())
