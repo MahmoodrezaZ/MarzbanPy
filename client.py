@@ -185,7 +185,7 @@ class Marzban(AbstractContextManager):
 
         return admin
 
-    @__flush_state
+    @__flush_state()
     def delete_admin(self, admin: Admin):
         request = self.__client.delete(
             self.base_url.join(f"/api/admin/{admin.username}")
@@ -210,7 +210,7 @@ class Marzban(AbstractContextManager):
 
         return admin
     
-    @__flush_state
+    @__flush_state()
     def get_admins(self):
         request = self.__client.get(self.base_url.join("/api/admins"))
 
@@ -223,7 +223,7 @@ class Marzban(AbstractContextManager):
 
         return users
 
-    @__flush_state
+    @__flush_state()
     def get_admins_generator(self):
         request = self.__client.get(self.base_url.join("/api/admins"))
 
@@ -232,7 +232,7 @@ class Marzban(AbstractContextManager):
         for user in response:
             yield Admin(username=user.get("username"), is_sudo=user.get("is_sudo"))
     
-    @__flush_state
+    @__flush_state()
     def get_admin(self, admin: Admin):
         request = self.__client.get(self.base_url.join(f"/api/admins?username={admin.username}"))
         
