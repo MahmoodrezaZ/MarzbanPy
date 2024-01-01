@@ -33,4 +33,5 @@ class TestClient(TestCase):
     #TODO: test_delete_admin
     #TODO: test_get_admins
     #TODO: test_get_admins_generator
+    #TODO: test_get_admin
         
