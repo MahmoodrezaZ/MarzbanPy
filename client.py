@@ -11,8 +11,17 @@ from exceptions import (
     ValidationError,
     NotExistsError,
 )
-from models import AccessToken, Admin
-
+from models import (
+    AccessToken,
+    Admin,
+    Subscription,
+    SubscriptionInfo,
+    Proxy,
+    LimitStrategy,
+    Status,
+    ClientType
+)
+from datetime import datetime
 
 class MarzbanState(Enum):
     UNOPENED = auto()
@@ -240,3 +249,44 @@ class Marzban(AbstractContextManager):
 
         for user in response:
             return Admin(username=user.get("username"), is_sudo=user.get("is_sudo"))
+
+    @__flush_state()
+    def subscription(self, subscription: Subscription):
+        request = self.__client.get( 
+            self.base_url.join(f"/sub/{subscription.token}/{subscription.client_type}")
+        )
+        
+        return request.text
+    
+    def subscription_url_generator(self, subscription: Subscription) -> str:
+        return str(self.base_url.join(subscription.url))
+    
+    @__flush_state()
+    def subscription_info(self, subscription: Subscription) -> SubscriptionInfo:
+        request = self.__client.get(
+            self.base_url.join(f"/sub/{subscription.token}/info")
+        )
+        
+        response = request.json()
+        
+        return SubscriptionInfo(
+            proxies=[Proxy(name=proxy.get("name"), id=proxy.get("id")) for proxy in response.get("proxies")],
+            expire=response.get("expire"),
+            data_limit=response.get("data_limit"),
+            data_limit_reset_strategy=response.get("data_limit_reset_strategy"),
+            inbounds=response.get('inbounds'),
+            note=response.get("note"),
+            sub_updated_at=datetime.strftime(response.get("sub_updated_at")),
+            sub_last_user_agent=response.get("sub_last_user_agent"),
+            online_at=datetime.strftime(response.get("online_at")),
+            on_hold_expire_duration=response.get("on_hold_expire_duration"),
+            on_hold_timeout=datetime.strftime(response.get("on_hold_timeout")),
+            username=response.get("username"),
+            status=response.get("status"),
+            used_traffic=response.get("used_traffic"),
+            lifetime_used_traffic=response.get("lifetime_used_traffic"),
+            created_at=datetime.strftime(response.get("created_at")),
+            links=response.get("links"),
+            subscription_url=response.get("subscription_url"),
+            excluded_inbounds=response.get("excluded_inbounds")
+        )
