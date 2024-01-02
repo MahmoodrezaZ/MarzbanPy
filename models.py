@@ -92,11 +92,11 @@ class SubscriptionInfo:
     links: list[str]
     subscription_url: str
     excluded_inbounds: list[str]
-    
+
     def __init__(
-        self, 
-        *, 
-        proxies: list[Proxy], 
+        self,
+        *,
+        proxies: list[Proxy],
         expire: int | None,
         data_limit: int,
         data_limit_reset_strategy: int | str,
@@ -114,7 +114,7 @@ class SubscriptionInfo:
         created_at: datetime,
         links: list[str],
         subscription_url: str,
-        excluded_inbounds: list[str]
+        excluded_inbounds: list[str],
     ):
         self.proxies = proxies
         self.expire = expire
@@ -135,3 +135,44 @@ class SubscriptionInfo:
         self.links = links
         self.subscription_url = subscription_url
         self.excluded_inbounds = excluded_inbounds
+
+
+class SystemStats:
+    version: str
+    mem_total: int
+    mem_used: int
+    cpu_cores: int
+    cpu_usage: int
+    total_user: int
+    users_active: int
+    incoming_bandwidth: int
+    outgoing_bandwidth: int
+    incoming_bandwidth_speed: int
+    outgoing_bandwidth_speed: int
+
+    def __init__(
+        self,
+        *,
+        version: str,
+        mem_total: int,
+        mem_used: int,
+        cpu_cores: int,
+        cpu_usage: int,
+        total_user: int,
+        users_active: int,
+        incoming_bandwidth: int,
+        outgoing_bandwidth: int,
+        incoming_bandwidth_speed: int,
+        outgoing_bandwidth_speed: int,
+    ) -> None:
+        self.version = version
+        self.mem_total = mem_total
+        self.mem_used = mem_used
+        self.cpu_cores = cpu_cores
+        self.cpu_usage = cpu_usage
+        self.total_user = total_user
+        self.users_active = users_active
+        self.incoming_bandwidth = incoming_bandwidth
+        self.outgoing_bandwidth = outgoing_bandwidth
+        self.incoming_bandwidth_speed = incoming_bandwidth_speed
+        self.outgoing_bandwidth_speed = outgoing_bandwidth_speed

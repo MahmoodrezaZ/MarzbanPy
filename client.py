@@ -19,7 +19,8 @@ from models import (
     Proxy,
     LimitStrategy,
     Status,
-    ClientType
+    ClientType,
+    SystemStats
 )
 from datetime import datetime
 
@@ -290,3 +291,35 @@ class Marzban(AbstractContextManager):
             subscription_url=response.get("subscription_url"),
             excluded_inbounds=response.get("excluded_inbounds")
         )
+        
+    @__flush_state()
+    def get_system_stats(self):
+        request = self.__client.get(
+            "/api/system"
+        )
+        
+        response = request.json()
+        
+        return SystemStats(
+            version=response.get("version"),
+            mem_total=response.get("mem_total"),
+            mem_used=response.get("mem_used"),
+            cpu_cores=response.get("cpu_cores"),
+            cpu_usage=response.get("cpu_usage"),
+            total_user=response.get("total_user"),
+            users_active=response.get("users_active"),
+            incoming_bandwidth=response.get("incoming_bandwidth"),
+            outgoing_bandwidth=response.get("outgoing_bandwidth"),
+            incoming_bandwidth_speed=response.get("incoming_bandwidth_speed"),
+            outgoing_bandwidth_speed=response.get("outgoing_bandwidth_speed")
+        )
+        
+        
+    #TODO
+    @__flush_state()
+    def get_hosts(self):
+        pass
+    
+    @__flush_state
+    def modify_hosts(self):
+        pass
