@@ -92,3 +92,46 @@ class SubscriptionInfo:
     links: list[str]
     subscription_url: str
     excluded_inbounds: list[str]
+    
+    def __init__(
+        self, 
+        *, 
+        proxies: list[Proxy], 
+        expire: int | None,
+        data_limit: int,
+        data_limit_reset_strategy: int | str,
+        inbounds: list[str],
+        note: str | None,
+        sub_updated_at: datetime | None,
+        sub_last_user_agent: str | None,
+        online_at: datetime | None,
+        on_hold_expire_duration: int | None,
+        on_hold_timeout: datetime | None,
+        username: str,
+        status: Status,
+        used_traffic: int,
+        lifetime_used_traffic: int,
+        created_at: datetime,
+        links: list[str],
+        subscription_url: str,
+        excluded_inbounds: list[str]
+    ):
+        self.proxies = proxies
+        self.expire = expire
+        self.data_limit = data_limit
+        self.data_limit_reset_strategy = data_limit_reset_strategy
+        self.inbounds = inbounds
+        self.note = note
+        self.sub_updated_at = sub_updated_at
+        self.sub_last_user_agent = sub_last_user_agent
+        self.online_at = online_at
+        self.on_hold_expire_duration = on_hold_expire_duration
+        self.on_hold_timeout = on_hold_timeout
+        self.username = username
+        self.status = status
+        self.used_traffic = used_traffic
+        self.lifetime_used_traffic = lifetime_used_traffic
+        self.created_at = created_at
+        self.links = links
+        self.subscription_url = subscription_url
+        self.excluded_inbounds = excluded_inbounds
