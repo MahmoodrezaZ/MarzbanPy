@@ -72,6 +72,29 @@ class ClientType:
 
 
 @dataclass
+class Inbound:
+    tag: str
+    protocol: str
+    network: str
+    tls: str
+    port: int
+    
+    def __init__(
+        self,
+        *,
+        tag: str,
+        protocol: str,
+        network: str,
+        tls: str,
+        port: int
+    ):
+        self.tag = tag
+        self.protocol = protocol
+        self.network = network
+        self.tls = tls
+        self.port = port
+
+@dataclass
 class SubscriptionInfo:
     proxies: list[Proxy]
     expire: int | None
@@ -136,7 +159,7 @@ class SubscriptionInfo:
         self.subscription_url = subscription_url
         self.excluded_inbounds = excluded_inbounds
 
-
+@dataclass
 class SystemStats:
     version: str
     mem_total: int

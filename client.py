@@ -20,7 +20,8 @@ from models import (
     LimitStrategy,
     Status,
     ClientType,
-    SystemStats
+    SystemStats,
+    Inbound
 )
 from datetime import datetime
 
@@ -234,7 +235,7 @@ class Marzban(AbstractContextManager):
         return users
 
     @__flush_state()
-    def get_admins_generator(self):
+    def iget_admins(self):
         request = self.__client.get(self.base_url.join("/api/admins"))
 
         response = request.json()
@@ -275,7 +276,16 @@ class Marzban(AbstractContextManager):
             expire=response.get("expire"),
             data_limit=response.get("data_limit"),
             data_limit_reset_strategy=response.get("data_limit_reset_strategy"),
-            inbounds=response.get('inbounds'),
+            inbounds=[
+                Inbound(
+                    tag=inbound.get("tag"),
+                    protocol=inbound.get("protocol"),
+                    network=inbound.get("network"),
+                    tls=inbound.get("tls"),
+                    port=inbound.get("port")
+                )
+                for inbound in response.get('inbounds')
+            ],
             note=response.get("note"),
             sub_updated_at=datetime.strftime(response.get("sub_updated_at")),
             sub_last_user_agent=response.get("sub_last_user_agent"),
@@ -314,11 +324,59 @@ class Marzban(AbstractContextManager):
             outgoing_bandwidth_speed=response.get("outgoing_bandwidth_speed")
         )
         
+    @__flush_state()
+    def get_inbounds(self):
+        request = self.__client.get(
+            self.base_url.join("/api/inbounds")
+        )
         
+        response = request.json()
+        result = {}
+        
+        for key in response.keys():
+            result[key] = [
+                Inbound(
+                    tag=inbound.get("tag"),
+                    protocol=inbound.get("protocol"),
+                    network=inbound.get("network"),
+                    tls=inbound.get("tls"),
+                    port=inbound.get("port")
+                )
+                for inbound in response.get(key)
+            ]
+        
+        return result
+    
+    @__flush_state()
+    def iget_inbounds(self):
+        request = self.__client.get(
+            self.base_url.join("/api/inbounds")
+        )
+        
+        response = request.json()
+        
+        for key in response.keys():
+            result = {
+                key: [
+                    Inbound(
+                        tag=inbound.get("tag"),
+                        protocol=inbound.get("protocol"),
+                        network=inbound.get("network"),
+                        tls=inbound.get("tls"),
+                        port=inbound.get("port")
+                    )
+                    for inbound in response.get(key)
+                ]
+            }
+
+            yield result
+    
     #TODO
     @__flush_state()
     def get_hosts(self):
-        pass
+        request = self.__client.get(
+            self.base_url.join("/api/hosts")
+        )
     
     @__flush_state
     def modify_hosts(self):
